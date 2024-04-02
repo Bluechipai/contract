@@ -15,19 +15,16 @@ contract IDOSetting is OwnableUpgradeable {
     address public usdtAddr;
     address public routerAddr;
     address public wethAddr;
-    //认购时、赎回时手续费地址
+  
     address public feeAddr;
     
     mapping(address => bool) private validAddrs;
     uint256 public one;
 
-    //公募赎回违约金
     uint256 public publicFee;//must div 10000
 
-    //公募用usdt购买时的固定手费
     uint256 public pubFixed;
 
-    //公募用Chip购买时的手费
     uint256 public lv0;
     uint256 public lv1;
     uint256 public lv2;
@@ -35,10 +32,8 @@ contract IDOSetting is OwnableUpgradeable {
     uint256 public lv4;
     uint256 public lv5;
 
-    //私募用usdt购买时的固定手费
     uint256 public privFixed;
 
-    //私募用Chip购买时的手费
     uint256 public lv0Priv;
     uint256 public lv1Priv;
     uint256 public lv2Priv;
@@ -116,7 +111,6 @@ contract IDOSetting is OwnableUpgradeable {
         privFixed = _privFixed;
     }
 
-    //公募赎回费用
     function setPublicFee(uint256 _publicFee) public onlyAdmin {
         publicFee = _publicFee;
     }
@@ -192,17 +186,13 @@ contract IDOSetting is OwnableUpgradeable {
     function setLv5Priv(uint256 _lv5Priv) public onlyAdmin {
         lv5Priv = _lv5Priv;
     }
-    //设置平台提取募资资金时抽取的手续费比例
     function setPubCmsFee(uint256 _pubCmsFee) public onlyAdmin {
         pubCmsFee = _pubCmsFee;
     }
-
-    //设置平台提取募资资金时抽取的手续费比例
     function setPrivCmsFee(uint256 _privCmsFee) public onlyAdmin {
         privCmsFee = _privCmsFee;
     }
 
-    //设置转卖手续费比例
     function setPubTOutFee(uint256 _pubTOutFee) public onlyAdmin {
         pubTOutFee = _pubTOutFee;
     }
@@ -211,7 +201,6 @@ contract IDOSetting is OwnableUpgradeable {
         privTOutFee = _privTOutFee;
     }
 
-    //设置赎回违约金参数
     function setRedeemMinFee(uint256 _redeemMinFee) public onlyAdmin {
         redeemMinFee = _redeemMinFee;
     }
@@ -315,7 +304,6 @@ contract IDOSetting is OwnableUpgradeable {
         return tokens;
     }
 
-    //获取需要支付的费用
     function getRedeemFee(uint256 amount, uint256 subsTime) public view returns (uint256) {
         uint256 timeLen = block.timestamp-subsTime;
         uint256 redduceFee = timeLen.div(redeemDay.mul(86400)).mul(redeemReduce);
@@ -332,7 +320,6 @@ contract IDOSetting is OwnableUpgradeable {
         return amount.mul(payFee).div(10000);
     }
 
-    //获取认购时所需支付的手续费
     function lv(address _token, uint256 _fundType, uint256 _amount) public view returns (uint256) {
         if(_fundType==1) {
             if(_token==usdtAddr) {
@@ -391,7 +378,6 @@ contract IDOSetting is OwnableUpgradeable {
         return "Lv0";
     }
 
-    //获取价格
     function getPrice(address _tokenIn) public view returns (uint256, uint8) {
         if (_tokenIn==address(0)) {
             _tokenIn = wethAddr;
@@ -408,11 +394,11 @@ contract IDOSetting is OwnableUpgradeable {
         uint256[] memory amountsExpected = IUniswapV2Router02(routerAddr).getAmountsOut(oneUnit, paths);
         return (amountsExpected[1], dec);
     }
-    //佣金
+
     function fee(uint256 _fundType) public view returns (uint256) {
         return _fundType==1?pubCmsFee:privCmsFee;
     }
-    //转卖手续费
+
     function transOutFee(uint256 _fundType) public view returns (uint256) {
         return _fundType==1?pubTOutFee:privTOutFee;
     }

@@ -15,16 +15,16 @@ contract Staking is OwnableUpgradeable {
     uint256 public liveRatio;
 
     struct DepositRecord {
-        address user;//用户
-        uint256 sType;//1:活期 2:定期
-        uint256 amount;//质押数量
-        uint256 dtime;//质押时间
+        address user;
+        uint256 sType;
+        uint256 amount;
+        uint256 dtime;
     }
 
     struct UserLiveStatistic {
-        uint256 total;//累计存款-本金
-        uint256 latestTime;//最近一次结算时间
-        uint256 interest;//累计的利息
+        uint256 total;
+        uint256 latestTime;
+        uint256 interest;
     }
     uint256 public currRecId;
     //index->live deposit record
@@ -37,9 +37,9 @@ contract Staking is OwnableUpgradeable {
     mapping (address => uint256[]) public uLiveIdxs;
 
     struct FixedPlan {
-        uint256 tLen;//时长-天
-        uint256 ratio;//年化收益
-        bool isValid;//是否有效
+        uint256 tLen;
+        uint256 ratio;
+        bool isValid;
     }
     uint256 public currPlanId;
      //index->fixed plan
@@ -50,14 +50,13 @@ contract Staking is OwnableUpgradeable {
 
     uint256 public sTotal;//total staked
     
-    //提现记录
     struct WdrawRecord {
-        address user;//提现用户
-        uint256 amount;//本金
-        uint256 interest;//收益
-        uint256 wTime;//提现时间
-        uint256 day;//定期时使用
-        uint256 ratio;//年化收益
+        address user;
+        uint256 amount;
+        uint256 interest;
+        uint256 wTime;
+        uint256 day;
+        uint256 ratio;
     }
     uint256 public currWdrawId;
     //index->withdraw record
@@ -65,8 +64,8 @@ contract Staking is OwnableUpgradeable {
     //withdraw index->deposit index
     mapping (uint256 => uint256[]) private wdRels;
 
-    uint256 public lTotal;//总的活期
-    //plan id->total 总的定期
+    uint256 public lTotal;
+    //plan id->total
     mapping (uint256 => uint256) public fTotals;
 
     function initialize(address _admin, uint256 _liveRatio) public virtual initializer {
@@ -114,7 +113,7 @@ contract Staking is OwnableUpgradeable {
         require(plans[_idx].isValid!=_isValid,"No update required");
         plans[_idx].isValid = _isValid;
     }
-    //定期
+    
     function fixedDeposit(uint256 _planId, uint256 _amt) public {
         require(_amt>0,"The amount must be greater than 0");
         require(userIndexs[_planId][msg.sender].length<=20,"Please withdraw and then pledge again");
@@ -132,16 +131,16 @@ contract Staking is OwnableUpgradeable {
         
         IERC20(token).safeTransferFrom(msg.sender, address(this), _amt);
     }
-    //计算定期
+    
     function calFixed(address _user, uint256 _planId) public view returns (uint256, uint256) {
         uint256[] memory idxs = userIndexs[_planId][_user];
-        uint256 total = 0;//本金
-        uint256 interestTotal = 0;//收益
+        uint256 total = 0;
+        uint256 interestTotal = 0;
         for(uint256 i =0;i < idxs.length;i++) {
             uint256 timeLen = plans[_planId].tLen.mul(86400);
             uint256 time = dRecords[idxs[i]].dtime.add(timeLen);
             
-            if(block.timestamp>=time) {//可提本金和利息
+            if(block.timestamp>=time) {
                 uint256 interest = dRecords[idxs[i]].amount.mul(timeLen).mul(plans[_planId].ratio).div(10000).div(31536000);
                 interestTotal = interestTotal.add(interest);
             }
@@ -149,7 +148,7 @@ contract Staking is OwnableUpgradeable {
         }
         return (total, interestTotal);
     }
-    //定期提取
+    
     function fixedWithdraw(uint256 _planId) public {
         uint256[] memory ids = userIndexs[_planId][msg.sender];
         require(ids.length>0,"You haven't pledged anything");
@@ -173,14 +172,12 @@ contract Staking is OwnableUpgradeable {
         IERC20(token).safeTransfer(msg.sender, total.add(interestTotal));
     }
 
-    //计算活期收益
     function calLiveInterest(uint256 total, uint256 latestTime) public view returns (uint256) {
         uint256 minusSec = block.timestamp-latestTime;
         uint256 interest = total.mul(minusSec).mul(liveRatio).div(10000).div(31536000);
         return interest;
     }
 
-    //活期
     function liveDeposit(uint256 _amt) public {
         require(_amt>0,"The amount must be greater than 0");
         require(uLiveIdxs[msg.sender].length<=20,"Please withdraw and then pledge again");
@@ -206,7 +203,6 @@ contract Staking is OwnableUpgradeable {
         IERC20(token).safeTransferFrom(msg.sender, address(this), _amt);
     }
 
-    //活期提取
     function liveWithdraw() public {
         UserLiveStatistic storage info = liveStatistics[msg.sender];
         require(info.total>0,"The withdrawable amount is 0");
@@ -242,7 +238,6 @@ contract Staking is OwnableUpgradeable {
         IERC20(token).safeTransfer(msg.sender, _amt);
     }
 
-    //获取用户所有的本金及利息-定期
     function getFixedTotal(address _user) public view returns (uint256, uint256) {
         uint256 total = 0;
         uint256 interestTotal = 0;
@@ -254,7 +249,6 @@ contract Staking is OwnableUpgradeable {
         return (total, interestTotal);
     }
 
-    //获取用户所有的本金及利息-活期
     function getLiveTotal(address _user) public view returns (uint256, uint256) {
         uint256 interestTotal = 0;
         UserLiveStatistic memory info = liveStatistics[_user];
@@ -271,5 +265,5 @@ contract Staking is OwnableUpgradeable {
 
     receive() external payable {}
 
-    uint256[49] private __gap;//加一个变量，这里要减少1
+    uint256[49] private __gap;
 }
