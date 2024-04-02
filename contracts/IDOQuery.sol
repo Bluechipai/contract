@@ -23,23 +23,21 @@ contract IDOQuery is OwnableUpgradeable {
         uint8 platDecimals;
     }
 
-    //用户认购信息
     struct UserSubsInfo {
-        uint256 userTotalSubs;//用户已认购的总金额USDT
-        uint256 userUsdtFunded;//用户已认购的USDT
-        uint256 userChipFunded;//用户已认购的chip
-        uint256 userPlatAmt;//平台币奖励
+        uint256 userTotalSubs;
+        uint256 userUsdtFunded;
+        uint256 userChipFunded;
+        uint256 userPlatAmt;
     }
 
-    //募资统计信息
     struct FundsInfo {
-        bool isStart;//是否已在链上开始募资
-        uint256 totalFunded;//项目已募资的总金额USDT
-        uint256 usdtFunded;//项目已募资的USDT
-        uint256 chipFunded;//项目已募资的chip
-        uint256 state;//项目募资状态
-        uint256 riskLevel;//项目募资风险
-        uint256 idoPrice;//IDO价格
+        bool isStart;
+        uint256 totalFunded;
+        uint256 usdtFunded;
+        uint256 chipFunded;
+        uint256 state;
+        uint256 riskLevel;
+        uint256 idoPrice;
     }
 
     function initialize(
@@ -128,7 +126,6 @@ contract IDOQuery is OwnableUpgradeable {
         });
     }
 
-    //用户获得的项目方代币的数量及需要的手续费
     function getUserSubsTokenAmt(uint256 fundraisinNo, address user) public view returns (uint256, uint256){
         uint256 subsAmount = IIdo(idoAddr).utsInfos(fundraisinNo, user).total;
         uint256 subsFee = 0;
